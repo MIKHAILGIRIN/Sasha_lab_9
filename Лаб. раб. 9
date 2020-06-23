@@ -14,6 +14,7 @@ void consoleInput(int array[arrayLength][arrayLength]) {
     }
 }
 
+
 void fileInput(int array[][arrayLength]) {
     const string fileName = "input.txt";
 
