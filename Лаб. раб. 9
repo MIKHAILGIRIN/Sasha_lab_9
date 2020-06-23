@@ -1,0 +1,130 @@
+#include <iostream>
+#include <fstream>
+#include <cmath>
+
+using namespace std;
+
+const int arrayLength = 5;
+
+void consoleInput(int array[arrayLength][arrayLength]) {
+    for (int i = 0; i < arrayLength; ++i) {
+        for (int j = 0; j < arrayLength; ++j) {
+            cin >> array[i][j];
+        }
+    }
+}
+
+void fileInput(int array[][arrayLength]) {
+    const string fileName = "input.txt";
+
+    ifstream inputStream;
+    inputStream.open(fileName);
+
+    for (int i = 0; i < arrayLength; ++i) {
+        for (int j = 0; j < arrayLength; ++j) {
+            inputStream >> array[i][j];
+        }
+    }
+
+    inputStream.close();
+}
+
+void createArray(int array[arrayLength][arrayLength], float resultArray[], void (*inputFunction)(int arr[arrayLength][arrayLength])) {
+    inputFunction(array);
+
+    for (int i = 0; i < arrayLength; ++i) {
+        int midValue = 0;
+        for (int j = 0; j < arrayLength; ++j) {
+            midValue += array[i][j];
+            midValue += array[arrayLength - j - 1][arrayLength - i - 1];
+        }
+        resultArray[i] = (float) midValue / arrayLength / 2;
+    }
+}
+
+float editArray(float resultArray[], int index, bool exists) {
+    if (index == -1) {
+        int minEl = 0;
+
+        for (int i = 1; i < arrayLength; ++i) {
+            if (resultArray[i] < resultArray[minEl]) {
+                minEl = i;
+            }
+        }
+        return editArray(resultArray, minEl + 1, exists);
+    } else {
+        if (index + 1 < arrayLength) {
+            if ((int) round(resultArray[index]) % 2 == 0) {
+                return resultArray[index] * editArray(resultArray, index + 1, true);
+            } else {
+                return editArray(resultArray, index + 1, exists);
+            }
+        } else if (index < arrayLength and (int) round(resultArray[index]) % 2 == 0) {
+            return resultArray[index];
+        } else {
+            if (exists) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    }
+}
+
+void consoleOutput(float array[], const float Y) {
+    cout << "Массив X выгядит следующим образом:" << endl;
+
+    for (int i = 0; i < arrayLength; ++i) {
+        cout << array[i] << " ";
+    }
+
+    cout << endl;
+
+    cout << "Число Y равно " << Y << endl;
+}
+
+void fileOutput(float array[], const float Y) {
+    const string filename = "output.txt";
+
+    ofstream outputStream;
+    outputStream.open(filename);
+
+    outputStream << "Массив X выгядит следующим образом:" << endl;
+
+    for (int i = 0; i < arrayLength; ++i) {
+        outputStream << array[i] << " ";
+    }
+
+    outputStream << endl;
+
+    outputStream << "Число Y равно " << Y << endl;
+
+    outputStream.close();
+}
+
+int main() {
+    setlocale(LC_CTYPE, "RUS");
+
+    int inputMatrix[arrayLength][arrayLength];
+    float resultArray[arrayLength], numberB;
+    bool inputType;
+
+    cout << "Выберите тип ввода массива:\n0 - Ввод из консоли\n1 - Ввод из файла\n";
+    cin >> inputType;
+    void (*inputFunction)(int arr[][arrayLength]);
+
+    if (inputType) {
+        inputFunction = fileInput;
+    } else {
+        inputFunction = consoleInput;
+    }
+
+    createArray(inputMatrix, resultArray, inputFunction);
+    numberB = editArray(resultArray, -1, false);
+
+    if (inputType) {
+        fileOutput(resultArray, numberB);
+    } else {
+        consoleOutput(resultArray, numberB);
+    }
+}
